@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    posts: Post;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -77,6 +78,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -136,7 +138,29 @@ export interface User {
  */
 export interface Media {
   id: string;
-  alt: string;
+  alt?: string | null;
+  /**
+   * Only applicable to videos (ignored for images)
+   */
+  videoOrientation?: ('Horizontal' | 'Vertical') | null;
+  /**
+   * Fields are populated on save
+   */
+  exif?: {
+    hasExif?: boolean | null;
+    dateTaken?: string | null;
+    camera?: string | null;
+    lens?: string | null;
+    iso?: number | null;
+    location?: {
+      latitude?: number | null;
+      longitude?: number | null;
+    };
+    flash?: {
+      didFire?: boolean | null;
+      description?: string | null;
+    };
+  };
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -148,6 +172,23 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: string;
+  title?: string | null;
+  date?: string | null;
+  media?:
+    | {
+        mediaItem: string | Media;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -163,6 +204,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: string | Media;
+      } | null)
+    | ({
+        relationTo: 'posts';
+        value: string | Post;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -227,6 +272,28 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  videoOrientation?: T;
+  exif?:
+    | T
+    | {
+        hasExif?: T;
+        dateTaken?: T;
+        camera?: T;
+        lens?: T;
+        iso?: T;
+        location?:
+          | T
+          | {
+              latitude?: T;
+              longitude?: T;
+            };
+        flash?:
+          | T
+          | {
+              didFire?: T;
+              description?: T;
+            };
+      };
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -238,6 +305,22 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  date?: T;
+  media?:
+    | T
+    | {
+        mediaItem?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -1,58 +1,48 @@
-import { headers as getHeaders } from 'next/headers.js'
-import Image from 'next/image'
 import { getPayload } from 'payload'
-import React from 'react'
-import { fileURLToPath } from 'url'
-
-import config from '@/payload.config'
-import './styles.css'
+import configPromise from '@payload-config'
+import { Post } from '@/components/ui/Post'
+import { ModeToggle } from '@/components/ui/modeToggle'
 
 export default async function HomePage() {
-  const headers = await getHeaders()
-  const payloadConfig = await config
-  const payload = await getPayload({ config: payloadConfig })
-  const { user } = await payload.auth({ headers })
+  const payload = await getPayload({ config: configPromise })
 
-  const fileURL = `vscode://file/${fileURLToPath(import.meta.url)}`
+  const posts = await payload.find({
+    collection: 'posts',
+    limit: 10,
+  })
+
+  const buildDateRaw = process.env.BUILD_DATE || new Date().toISOString()
+  const buildDateObj = new Date(buildDateRaw)
+
+  // Get day, month, year
+  const day = buildDateObj.getDate()
+  const month = buildDateObj.getMonth() + 1 // Months are zero-indexed
+  const year = buildDateObj.getFullYear()
+
+  const formattedBuildDate = `${day}.${month}.${year}`
 
   return (
-    <div className="home">
-      <div className="content">
-        <picture>
-          <source srcSet="https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-favicon.svg" />
-          <Image
-            alt="Payload Logo"
-            height={65}
-            src="https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-favicon.svg"
-            width={65}
-          />
-        </picture>
-        {!user && <h1>Welcome to your new project.</h1>}
-        {user && <h1>Welcome back, {user.email}</h1>}
-        <div className="links">
-          <a
-            className="admin"
-            href={payloadConfig.routes.admin}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Go to admin panel
-          </a>
-          <a
-            className="docs"
-            href="https://payloadcms.com/docs"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Documentation
-          </a>
+    <div className="container mx-auto px-4 py-16">
+      <div className="flex flex-col md:flex-row justify-between items-center pb-16">
+        <h1 className="text-lg font-mono ">
+          <span className="italic">feed</span>.markusevanger.no
+        </h1>
+        <div className="flex justify-center items-center gap-8">
+          <p className="text-sm font-mono text-muted-foreground">
+            🏗️ Under construction (v. {formattedBuildDate})
+          </p>
+          <ModeToggle />
         </div>
       </div>
-      <div className="footer">
-        <p>Update this page by editing</p>
-        <a className="codeLink" href={fileURL}>
-          <code>app/(frontend)/page.tsx</code>
-        </a>
+
+      <div className="flex flex-col gap-36">
+        {posts.docs && posts.docs.length > 0 ? (
+          posts.docs.map((post) => <Post key={post.id} post={post} />)
+        ) : (
+          <div className="flex justify-center items-center">
+            <p className="text-muted-foreground font-mono">No posts.</p>
+          </div>
+        )}
       </div>
     </div>
   )

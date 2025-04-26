@@ -1,8 +1,6 @@
-# blank
+# Feed 2.0
 
-blank
+Remake of [feed](https://github.com/markusevanger/feed) using payload CMS for complete self hosting on a local mongodb instances.  
 
-## Attributes
 
-- **Database**: mongodb
-- **Storage Adapter**: localDisk
+check out: [feed-mk2.markusevanger.no](https://feed-mk2.markusevanger.no/)
